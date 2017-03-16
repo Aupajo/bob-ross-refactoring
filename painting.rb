@@ -8,51 +8,7 @@ class Painting
   end
 
   def value
-    score, num_trees, num_mountains = [0] * 3
-
-    @items.each do |item|
-      if item[:type] == :tree
-        num_trees += 1
-      elsif item[:type] == :mountain
-        num_mountains += 1
-        score += 2
-        if num_mountains > 3
-          score -= 7
-        end
-      elsif item[:type] == :cloud
-        if item[:y] < 2
-          score += 1
-        else
-          score -= 1
-        end
-      elsif item[:type] == :river
-        score += 1
-
-        [
-          [item[:x] - 1, item[:y] -1],
-          [item[:x], item[:y] -1],
-          [item[:x] + 1, item[:y] -1],
-          [item[:x] - 1, item[:y]],
-          [item[:x] + 1, item[:y]],
-          [item[:x] - 1, item[:y] + 1],
-          [item[:x], item[:y] + 1],
-          [item[:x] + 1, item[:y] + 1]
-        ].each do |x, y|
-          score += 2 if at(x, y) == :river
-        end
-      end
-    end
-
-    tree_score = num_trees
-    tree_score += 5 if num_trees > 3
-
-    if tree_score > 10
-      tree_score = 10
-    end
-
-    score += tree_score
-
-    score
+    ScoreCalculator.new(@items).value
   end
 
   def add(item)
@@ -119,5 +75,73 @@ class Painting
   end
 
   class AlreadyPaintedError < StandardError
+  end
+
+  class ScoreCalculator
+
+    def initialize(items)
+      @items = items
+      @score = 0
+      @num_trees = 0
+      @num_mountains = 0
+    end
+
+    def value
+      @items.each do |item|
+        self.send(item[:type], item)
+      end
+
+      tree_score = @num_trees
+      tree_score += 5 if @num_trees > 3
+
+      if tree_score > 10
+        tree_score = 10
+      end
+      @score += tree_score
+    end
+
+    def tree(item)
+      @num_trees += 1
+    end
+
+    def mountain(item)
+      @num_mountains += 1
+      @score += 2
+      @score -= 7 if @num_mountains > 3
+    end
+
+    def cloud(item)
+      if item[:y] < 2
+        @score += 1
+      else
+        @score -= 1
+      end
+    end
+
+    def river(item)
+      @score += 1
+
+      [
+        [item[:x] - 1, item[:y] -1],
+        [item[:x], item[:y] -1],
+        [item[:x] + 1, item[:y] -1],
+        [item[:x] - 1, item[:y]],
+        [item[:x] + 1, item[:y]],
+        [item[:x] - 1, item[:y] + 1],
+        [item[:x], item[:y] + 1],
+        [item[:x] + 1, item[:y] + 1]
+      ].each do |x, y|
+        @score += 2 if at(x, y) == :river
+      end
+    end
+
+    def at(x, y)
+      locate(x, y)[:type]
+    end
+
+    def locate(x, y)
+      @items.find { |item| item[:x] == x && item[:y] == y } || { type: :canvas }
+    end
+
   end
 end
