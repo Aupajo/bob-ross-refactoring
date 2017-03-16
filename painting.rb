@@ -88,7 +88,7 @@ class Painting
 
     def value
       @items.each do |item|
-        self.send(item[:type], item)
+        @score += self.send(item[:type], item)
       end
 
       @score += tree_score
@@ -96,6 +96,7 @@ class Painting
 
     def tree(item)
       @num_trees += 1
+      0 # no score for trees
     end
 
     def tree_score
@@ -107,24 +108,22 @@ class Painting
 
     def mountain(item)
       @num_mountains += 1
-      @score += 2
-      @score -= 7 if @num_mountains > 3
+      score = 2
+      score -= 7 if @num_mountains > 3
+      score
     end
 
     def cloud(item)
-      if item[:y] < 2
-        @score += 1
-      else
-        @score -= 1
-      end
+      cloud_in_sky?(item) ? 1 : -1
     end
 
     def river(item)
-      @score += 1
+      score = 1
 
       surrounding_locations(item).each do |x, y|
-        @score += 2 if at(x, y) == :river
+        score += 2 if at(x, y) == :river
       end
+      score
     end
 
     def at(x, y)
@@ -136,6 +135,10 @@ class Painting
     end
 
     private
+
+    def cloud_in_sky?(item)
+      item[:y] < 2
+    end
 
     def surrounding_locations(item)
       [
