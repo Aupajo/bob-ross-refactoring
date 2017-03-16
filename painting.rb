@@ -1,4 +1,6 @@
 class Painting
+  LOCATIONS = { tree: "🌲", river: "🌊", cloud: "☁️", mountain: "🗻", canvas: "." }.freeze
+
   def initialize(width, height)
     @width = width
     @height = height
@@ -6,11 +8,9 @@ class Painting
   end
 
   def value
-    score = 0
-    num_trees = 0
-    num_mountains = 0
+    score, num_trees, num_mountains = [0] * 3
 
-    for item in @items
+    @items.each do |item|
       if item[:type] == :tree
         num_trees += 1
       elsif item[:type] == :mountain
@@ -61,51 +61,58 @@ class Painting
   end
 
   def at(x, y)
-    if @painting_item
-      located = @items.find { |item| item[:x] == x && item[:y] == y }
-
-      if located
-        raise AlreadyPaintedError, "at (#{x}, #{y})"
-      elsif x < 0 || y < 0 || x > @width - 1 || y > @height - 1
-        fail OutOfBounds, "at (#{x}, #{y})"
-      else
-        @items.push({ x: x, y: y, type: @painting_item })
-      end
-
-      @painting_item = nil
+    if currently_painting?
+      paint!(x, y)
     else
-      located = @items.find { |item| item[:x] == x && item[:y] == y }
-
-      if located
-        located[:type]
-      else
-        :canvas
-      end
+      locate(x, y)[:type]
     end
   end
 
   def render
     rendered = ""
 
-    for y in 0..(@height - 1)
-      for x in 0..(@width - 1)
-        located = @items.find { |item| item[:x] == x && item[:y] == y }
-
-        if located
-          case located[:type]
-          when :tree then rendered << "🌲"
-          when :river then rendered << "🌊"
-          when :cloud then rendered << "☁️"
-          when :mountain then rendered << "🗻"
-          end
-        else
-          rendered << "."
-        end
+    for y in 0...@height
+      for x in 0...@width
+        rendered << LOCATIONS[locate(x, y)[:type]]
       end
       rendered << "\n"
     end
 
     rendered
+  end
+
+  private
+  #
+  # def canvas
+  #   Canvas.new(x, y)
+  # end
+
+  def out_of_bounds?(x, y)
+    x < 0 || y < 0 || x > @width - 1 || y > @height - 1
+  end
+
+  def locate(x, y)
+    @items.find { |item| item[:x] == x && item[:y] == y } || { type: :canvas }
+  end
+
+  def currently_painting?
+    !!@painting_item
+  end
+
+  def painted?(x, y)
+    locate(x,y)[:type] != :canvas
+  end
+
+  def paint!(x, y)
+    if painted?(x, y)
+      raise AlreadyPaintedError, "at (#{x}, #{y})"
+    elsif out_of_bounds?(x, y)
+      fail OutOfBounds, "at (#{x}, #{y})"
+    else
+      @items.push( x: x, y: y, type: @painting_item )
+    end
+
+    @painting_item = nil
   end
 
   class OutOfBounds < StandardError
