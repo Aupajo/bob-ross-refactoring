@@ -1,8 +1,13 @@
 class Painting
+  attr_reader :width, :height
+
   def initialize(width, height)
     @width = width
     @height = height
-    @items = []
+  end
+
+  def items
+    @items ||= []
   end
 
   def value
@@ -10,7 +15,7 @@ class Painting
     num_trees = 0
     num_mountains = 0
 
-    for item in @items
+    for item in items
       if item[:type] == :tree
         num_trees += 1
       elsif item[:type] == :mountain
@@ -62,19 +67,19 @@ class Painting
 
   def at(x, y)
     if @painting_item
-      located = @items.find { |item| item[:x] == x && item[:y] == y }
+      located = items.find { |item| item[:x] == x && item[:y] == y }
 
       if located
         raise AlreadyPaintedError, "at (#{x}, #{y})"
-      elsif x < 0 || y < 0 || x > @width - 1 || y > @height - 1
+      elsif x < 0 || y < 0 || x > width - 1 || y > height - 1
         fail OutOfBounds, "at (#{x}, #{y})"
       else
-        @items.push({ x: x, y: y, type: @painting_item })
+        items.push({ x: x, y: y, type: @painting_item })
       end
 
       @painting_item = nil
     else
-      located = @items.find { |item| item[:x] == x && item[:y] == y }
+      located = items.find { |item| item[:x] == x && item[:y] == y }
 
       if located
         located[:type]
@@ -87,9 +92,9 @@ class Painting
   def render
     rendered = ""
 
-    for y in 0..(@height - 1)
-      for x in 0..(@width - 1)
-        located = @items.find { |item| item[:x] == x && item[:y] == y }
+    for y in 0..(height - 1)
+      for x in 0..(width - 1)
+        located = items.find { |item| item[:x] == x && item[:y] == y }
 
         if located
           case located[:type]
@@ -113,4 +118,7 @@ class Painting
 
   class AlreadyPaintedError < StandardError
   end
+
+
+
 end
