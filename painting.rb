@@ -103,9 +103,7 @@ class Painting
 
     def mountain(item)
       @num_mountains += 1
-      score = 2
-      score -= 7 if @num_mountains > 3
-      score
+      @num_mountains > 3 ? -5 : 2
     end
 
     def cloud(item)
