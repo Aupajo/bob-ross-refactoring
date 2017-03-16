@@ -26,7 +26,7 @@ class Painting
   end
 
   def items
-    @items ||= []
+    @items ||= height.times.map { ("." * width) << "\n" }.join
   end
 
   def value
@@ -86,15 +86,16 @@ class Painting
 
   def at(x, y)
     if @painting_item
-      located = items.find { |item| item[:x] == x && item[:y] == y }
+      #located = items.find { |item| item[:x] == x && item[:y] == y }
+      items[((y + 1) * width) + x] = @painting_item.render
 
-      if located
-        raise AlreadyPaintedError, "at (#{x}, #{y})"
-      elsif x < 0 || y < 0 || x > width - 1 || y > height - 1
-        fail OutOfBounds, "at (#{x}, #{y})"
-      else
-        items.push({ x: x, y: y, type: @painting_item })
-      end
+      #if located
+      #  raise AlreadyPaintedError, "at (#{x}, #{y})"
+      #elsif x < 0 || y < 0 || x > width - 1 || y > height - 1
+      #  fail OutOfBounds, "at (#{x}, #{y})"
+      #else
+      #  items.push({ x: x, y: y, type: @painting_item })
+      #end
 
       @painting_item = nil
     else
@@ -109,22 +110,7 @@ class Painting
   end
 
   def render
-    rendered = ""
-
-    for y in 0..(height - 1)
-      for x in 0..(width - 1)
-        located = items.find { |item| item[:x] == x && item[:y] == y }
-
-        if located
-          rendered << located[:type].render
-        else
-          rendered << "."
-        end
-      end
-      rendered << "\n"
-    end
-
-    rendered
+    @items
   end
 
 
