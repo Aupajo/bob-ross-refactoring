@@ -91,17 +91,18 @@ class Painting
         self.send(item[:type], item)
       end
 
-      tree_score = @num_trees
-      tree_score += 5 if @num_trees > 3
-
-      if tree_score > 10
-        tree_score = 10
-      end
       @score += tree_score
     end
 
     def tree(item)
       @num_trees += 1
+    end
+
+    def tree_score
+      score = @num_trees
+      score += 5 if @num_trees > 3
+
+      [score, 10].min
     end
 
     def mountain(item)
@@ -121,16 +122,7 @@ class Painting
     def river(item)
       @score += 1
 
-      [
-        [item[:x] - 1, item[:y] -1],
-        [item[:x], item[:y] -1],
-        [item[:x] + 1, item[:y] -1],
-        [item[:x] - 1, item[:y]],
-        [item[:x] + 1, item[:y]],
-        [item[:x] - 1, item[:y] + 1],
-        [item[:x], item[:y] + 1],
-        [item[:x] + 1, item[:y] + 1]
-      ].each do |x, y|
+      surrounding_locations(item).each do |x, y|
         @score += 2 if at(x, y) == :river
       end
     end
@@ -143,5 +135,19 @@ class Painting
       @items.find { |item| item[:x] == x && item[:y] == y } || { type: :canvas }
     end
 
+    private
+
+    def surrounding_locations(item)
+      [
+        [item[:x] - 1, item[:y] -1],
+        [item[:x], item[:y] -1],
+        [item[:x] + 1, item[:y] -1],
+        [item[:x] - 1, item[:y]],
+        [item[:x] + 1, item[:y]],
+        [item[:x] - 1, item[:y] + 1],
+        [item[:x], item[:y] + 1],
+        [item[:x] + 1, item[:y] + 1]
+      ]
+    end
   end
 end
