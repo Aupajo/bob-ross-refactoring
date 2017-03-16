@@ -25,16 +25,11 @@ class Painting
   end
 
   def render
-    rendered = ""
-
-    for y in 0...@height
-      for x in 0...@width
-        rendered << LOCATIONS[locate(x, y)[:type]]
-      end
-      rendered << "\n"
-    end
-
-    rendered
+    (0...@height).collect do |y|
+      (0...@width).collect do |x|
+        LOCATIONS[locate(x, y)[:type]]
+      end.join("")
+    end.join("\n") + "\n"
   end
 
   private
