@@ -1,4 +1,23 @@
 class Painting
+  class OutOfBounds < StandardError; end
+  class AlreadyPaintedError < StandardError; end
+
+  class Paintable
+    attr_reader :type
+    def initialize(type)
+      @type = type
+    end
+
+    def render
+      case type
+      when :tree      then "🌲"
+      when :river     then "🌊"
+      when :cloud     then "☁️"
+      when :mountain  then "🗻"
+      end
+    end
+  end
+
   attr_reader :width, :height
 
   def initialize(width, height)
@@ -16,21 +35,21 @@ class Painting
     num_mountains = 0
 
     for item in items
-      if item[:type] == :tree
+      if item[:type].type == :tree
         num_trees += 1
-      elsif item[:type] == :mountain
+      elsif item[:type].type == :mountain
         num_mountains += 1
         score += 2
         if num_mountains > 3
           score -= 7
         end
-      elsif item[:type] == :cloud
+      elsif item[:type].type == :cloud
         if item[:y] < 2
           score += 1
         else
           score -= 1
         end
-      elsif item[:type] == :river
+      elsif item[:type].type == :river
         score += 1
 
         [
@@ -61,7 +80,7 @@ class Painting
   end
 
   def add(item)
-    @painting_item = item
+    @painting_item = Paintable.new(item)
     self
   end
 
@@ -82,7 +101,7 @@ class Painting
       located = items.find { |item| item[:x] == x && item[:y] == y }
 
       if located
-        located[:type]
+        located[:type].type
       else
         :canvas
       end
@@ -97,12 +116,7 @@ class Painting
         located = items.find { |item| item[:x] == x && item[:y] == y }
 
         if located
-          case located[:type]
-          when :tree then rendered << "🌲"
-          when :river then rendered << "🌊"
-          when :cloud then rendered << "☁️"
-          when :mountain then rendered << "🗻"
-          end
+          rendered << located[:type].render
         else
           rendered << "."
         end
@@ -111,12 +125,6 @@ class Painting
     end
 
     rendered
-  end
-
-  class OutOfBounds < StandardError
-  end
-
-  class AlreadyPaintedError < StandardError
   end
 
 
